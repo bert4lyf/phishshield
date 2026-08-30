@@ -86,22 +86,31 @@ async def lifespan(app: FastAPI):
     """Application startup and shutdown lifecycle management."""
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION} on {settings.HOST}:{settings.PORT}")
     
-    # Initialize SQLite tables
-    init_db()
+    try:
+        # Initialize SQLite tables
+        init_db()
+    except Exception as e:
+        logger.warning(f"Database initialization warning in serverless environment: {e}")
     
-    # Initialize ML Model
-    ml_model = get_ml_model()
-    if ml_model.is_loaded:
-        logger.info("Tier 2 XGBoost ML Model loaded and ready for inference.")
-    else:
-        logger.warning("Tier 2 XGBoost model not loaded. Run train_ml.py to train and compile model.json.")
+    try:
+        # Initialize ML Model
+        ml_model = get_ml_model()
+        if ml_model.is_loaded:
+            logger.info("Tier 2 XGBoost ML Model loaded and ready for inference.")
+        else:
+            logger.warning("Tier 2 XGBoost model using heuristic fallback.")
+    except Exception as e:
+        logger.warning(f"ML model startup warning: {e}")
 
-    # Initialize Gemini AI Engine
-    gemini_client = get_gemini_client()
-    if gemini_client:
-        logger.info(f"Gemini AI Engine active with model: {settings.GEMINI_MODEL}")
-    else:
-        logger.info("Running in Heuristics+ML mode (No GEMINI_API_KEY detected in .env).")
+    try:
+        # Initialize Gemini AI Engine
+        gemini_client = get_gemini_client()
+        if gemini_client:
+            logger.info(f"Gemini AI Engine active with model: {settings.GEMINI_MODEL}")
+        else:
+            logger.info("Running in Heuristics+ML mode.")
+    except Exception as e:
+        logger.warning(f"Gemini AI client startup warning: {e}")
         
     yield
     logger.info("Shutting down PhishShield AI Security Engine.")

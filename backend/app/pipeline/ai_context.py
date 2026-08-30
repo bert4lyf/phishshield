@@ -2,9 +2,14 @@
 
 import json
 import logging
-from typing import List, Optional, Tuple
-from google import genai
-from google.genai import types
+from typing import Any, List, Optional, Tuple
+
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    genai = None
+    types = None
 
 from app.config import settings
 from app.schemas import RiskFactor, RiskLevel
@@ -12,11 +17,13 @@ from app.schemas import RiskFactor, RiskLevel
 logger = logging.getLogger("phishshield.ai_context")
 
 # Initialize Gemini Client if API key is provided
-_gemini_client: Optional[genai.Client] = None
+_gemini_client: Optional[Any] = None
 
-def get_gemini_client() -> Optional[genai.Client]:
+def get_gemini_client():
     """Retrieve or initialize singleton Google GenAI client."""
     global _gemini_client
+    if genai is None:
+        return None
     if _gemini_client is None and settings.GEMINI_API_KEY:
         try:
             _gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)

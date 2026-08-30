@@ -1,11 +1,11 @@
+import os
 import sys
-from pathlib import Path
 
-# Add project root and backend directory to sys.path for serverless resolution
-ROOT_DIR = Path(__file__).resolve().parent.parent
-BACKEND_DIR = ROOT_DIR / "backend"
+# Force root directory and backend directory into sys.path
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+backend_dir = os.path.join(root_dir, "backend")
 
-for p in (str(ROOT_DIR), str(BACKEND_DIR)):
+for p in (root_dir, backend_dir):
     if p not in sys.path:
         sys.path.insert(0, p)
 
