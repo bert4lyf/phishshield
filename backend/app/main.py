@@ -1,5 +1,14 @@
 """Main FastAPI Application entrypoint for PhishShield AI Security Engine."""
 
+import sys
+import os
+from pathlib import Path
+
+# Ensure backend directory is in sys.path for Vercel serverless execution
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 import asyncio
 import logging
 from contextlib import asynccontextmanager
@@ -109,7 +118,7 @@ app = FastAPI(
 # Enable CORS for dashboard, browser extensions, and external clients
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

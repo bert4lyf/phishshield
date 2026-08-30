@@ -2,7 +2,42 @@
 
 import re
 from typing import List, Tuple
-import Levenshtein
+
+try:
+    import Levenshtein
+except ImportError:
+    try:
+        from rapidfuzz.distance import Levenshtein as _rf_lev
+        class Levenshtein:
+            @staticmethod
+            def distance(s1: str, s2: str) -> int:
+                return int(_rf_lev.distance(s1, s2))
+            @staticmethod
+            def ratio(s1: str, s2: str) -> float:
+                return float(_rf_lev.normalized_similarity(s1, s2))
+    except ImportError:
+        class Levenshtein:
+            @staticmethod
+            def distance(s1: str, s2: str) -> int:
+                if s1 == s2:
+                    return 0
+                if len(s1) < len(s2):
+                    return Levenshtein.distance(s2, s1)
+                if len(s2) == 0:
+                    return len(s1)
+                prev = list(range(len(s2) + 1))
+                for i, c1 in enumerate(s1):
+                    curr = [i + 1]
+                    for j, c2 in enumerate(s2):
+                        curr.append(min(prev[j + 1] + 1, curr[j] + 1, prev[j] + (c1 != c2)))
+                    prev = curr
+                return prev[-1]
+            @staticmethod
+            def ratio(s1: str, s2: str) -> float:
+                lens = len(s1) + len(s2)
+                if lens == 0:
+                    return 1.0
+                return 1.0 - (Levenshtein.distance(s1, s2) / max(len(s1), len(s2)))
 
 from app.schemas import RiskFactor, RiskLevel
 from app.utils.domain_tools import (

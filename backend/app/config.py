@@ -22,6 +22,7 @@ class Settings:
     PORT: int = int(os.getenv("PORT", "8000"))
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    IS_VERCEL: bool = bool(os.getenv("VERCEL"))
 
     # AI Configuration (Google Gemini)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
@@ -43,13 +44,27 @@ class Settings:
     WEIGHT_ML: float = 0.45
     WEIGHT_AI: float = 0.20
 
-    # Data & Storage Paths
-    DATA_DIR: Path = BASE_DIR / "data"
-    SQLITE_DB_PATH: Path = BASE_DIR / "data" / "phishshield.db"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'data' / 'phishshield.db'}")
-    ML_MODEL_PATH: Path = BASE_DIR / "data" / "model.json"
+    # Data & Storage Paths (Serverless /tmp check for Vercel read-only filesystem)
+    if os.getenv("VERCEL"):
+        DATA_DIR: Path = Path("/tmp")
+        SQLITE_DB_PATH: Path = Path("/tmp/phishshield.db")
+        DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:////tmp/phishshield.db")
+    else:
+        DATA_DIR: Path = BASE_DIR / "data"
+        SQLITE_DB_PATH: Path = BASE_DIR / "data" / "phishshield.db"
+        DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'data' / 'phishshield.db'}")
 
-    # CORS settings
+    # ML Model Path resolution with fallbacks for serverless environments
+    _default_model_path = BASE_DIR / "data" / "model.json"
+    if not _default_model_path.exists():
+        if Path("backend/data/model.json").exists():
+            _default_model_path = Path("backend/data/model.json")
+        elif Path("data/model.json").exists():
+            _default_model_path = Path("data/model.json")
+
+    ML_MODEL_PATH: Path = _default_model_path
+
+    # CORS settings (Open for Extension, Localhost & Production Vercel Dashboard)
     CORS_ORIGINS: list[str] = ["*"]
 
 
