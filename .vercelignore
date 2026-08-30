@@ -1,0 +1,38 @@
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python Bytecode & Caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Git Metadata
+.git/
+.github/
+
+# Frontend Extension & Dashboard (Hosted separately / static)
+extension/
+dashboard/
+
+# Local SQLite Databases & Logs
+*.db
+*.sqlite3
+backend/data/*.db
+*.log
+
+# Tests & Documentation
+test_*.py
+backend/test_engine.py
+backend/smoke_test.py
+*.md
+
+# IDE & OS Artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

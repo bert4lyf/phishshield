@@ -8,8 +8,6 @@ from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
-from sklearn.metrics import accuracy_score, classification_report, f1_score, precision_score, recall_score
-from sklearn.model_selection import train_test_split
 import xgboost as xgb
 
 from app.config import settings
@@ -213,6 +211,9 @@ def train_and_save_model(output_path: Path = settings.ML_MODEL_PATH) -> xgb.XGBC
     """
     Train Tier 2 XGBoost classifier on extracted URL features and save model.json.
     """
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
     logger.info("Generating synthetic training dataset of URLs...")
     urls, labels = build_synthetic_dataset(num_samples=1200)
 
