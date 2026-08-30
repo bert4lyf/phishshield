@@ -1,11 +1,11 @@
 import os
 import sys
 
-# Force root directory and backend directory into sys.path
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-backend_dir = os.path.join(root_dir, "backend")
+# Force the project root and backend directory into sys.path
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+backend_path = os.path.join(root_path, "backend")
 
-for p in (root_dir, backend_dir):
+for p in (root_path, backend_path):
     if p not in sys.path:
         sys.path.insert(0, p)
 

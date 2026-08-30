@@ -4,10 +4,14 @@ import sys
 import os
 from pathlib import Path
 
-# Ensure backend directory is in sys.path for Vercel serverless execution
-BACKEND_DIR = Path(__file__).resolve().parent.parent
-if str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
+# Ensure backend directory and project root are in sys.path
+_current_file = Path(__file__).resolve()
+_backend_dir = _current_file.parent.parent
+_root_dir = _backend_dir.parent
+
+for _p in (str(_backend_dir), str(_root_dir)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 import asyncio
 import logging
