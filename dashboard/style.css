@@ -1,0 +1,245 @@
+/* ==========================================================================
+   PhishShield AI — Executive SOC Dashboard Enterprise Theme
+   Palette: Dark Slate (#0F172A), Muted Slate (#1E293B), Border (#334155), Blue (#2563EB)
+   ========================================================================== */
+
+:root {
+  --ps-surface: #0f172a;
+  --ps-panel: #1e293b;
+  --ps-panel-hover: #273549;
+  --ps-border: #334155;
+  --ps-border-subtle: #1e293b;
+  
+  --ps-primary: #2563eb;
+  --ps-primary-hover: #1d4ed8;
+
+  --ps-text-white: #f8fafc;
+  --ps-text-muted: #94a3b8;
+  --ps-text-dim: #64748b;
+
+  --ps-badge-safe-bg: #065f46;
+  --ps-badge-safe-text: #34d399;
+  
+  --ps-badge-med-bg: #78350f;
+  --ps-badge-med-text: #fbbf24;
+  
+  --ps-badge-danger-bg: #881337;
+  --ps-badge-danger-text: #fca5a5;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--ps-surface);
+  color: var(--ps-text-white);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  touch-action: manipulation;
+}
+
+/* Custom Clean Scrollbar & iOS Momentum Scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Apple Safari Backdrop Blur Fallback */
+.backdrop-blur {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* Flat, Crisp Severity Badges */
+.badge-safe {
+  background-color: var(--ps-badge-safe-bg) !important;
+  color: var(--ps-badge-safe-text) !important;
+  border: 1px solid rgba(52, 211, 153, 0.3) !important;
+}
+
+.badge-low, .badge-medium {
+  background-color: var(--ps-badge-med-bg) !important;
+  color: var(--ps-badge-med-text) !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.badge-high, .badge-critical {
+  background-color: var(--ps-badge-danger-bg) !important;
+  color: var(--ps-badge-danger-text) !important;
+  border: 1px solid rgba(252, 165, 165, 0.3) !important;
+}
+
+/* Dense Data Table Row Hover */
+.soc-row {
+  transition: background-color 0.12s ease;
+}
+.soc-row:hover {
+  background-color: var(--ps-panel-hover);
+}
+
+/* Smooth Progress Bar Fill */
+.bar-fill {
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Shimmer Skeleton Loading Animation */
+@keyframes psShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #1e293b 25%,
+    #334155 50%,
+    #1e293b 75%
+  );
+  background-size: 200% 100%;
+  animation: psShimmer 1.4s infinite linear;
+}
+
+/* Scan Radar Pulse Line */
+@keyframes psScanSweep {
+  0% {
+    left: -25%;
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0.2;
+  }
+}
+
+.scan-radar-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.45), transparent);
+  animation: psScanSweep 1.1s infinite ease-in-out;
+}
+
+/* Modal Animations */
+@keyframes modalZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-in {
+  animation: modalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Refresh Spinning Animation on Button */
+@keyframes spinSmooth {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#refresh-telemetry-btn.is-refreshing svg {
+  animation: spinSmooth 0.7s linear infinite !important;
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.ps-toast {
+  pointer-events: auto;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: "Inter", sans-serif;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: toastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.ps-toast.hiding {
+  animation: toastSlideOut 0.2s ease forwards;
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+/* Mobile & Apple Touch Refinements */
+@media (max-width: 640px) {
+  #toast-container {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+  }
+  .ps-toast {
+    width: 100%;
+  }
+  input, textarea, button {
+    font-size: 16px; /* Prevents iOS Safari auto-zoom */
+  }
+}

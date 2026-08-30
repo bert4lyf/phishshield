@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhishShield Engine</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="ps-popup-body">
+  <div class="ps-app-container">
+    
+    <!-- Minimalist Enterprise Header -->
+    <header class="ps-app-header">
+      <div class="ps-logo-group">
+        <img src="icons/shield_icon.png" alt="PhishShield" style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px;" />
+        <span class="ps-logo-title">PhishShield Engine</span>
+      </div>
+      <div class="ps-engine-status" id="ps-engine-status" title="Real-time Engine Liveness">
+        <span class="ps-status-dot online" id="ps-status-dot"></span>
+        <span id="ps-status-text">Protection Active</span>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="ps-main-content">
+
+      <!-- Current Tab Status Card -->
+      <section class="ps-card">
+        <div class="ps-card-header">
+          <span class="ps-card-title">Target Inspection</span>
+          <span class="ps-ssl-badge" id="ps-ssl-badge">
+            <span id="ps-ssl-icon">🔒</span> <span id="ps-ssl-text">HTTPS</span>
+          </span>
+        </div>
+
+        <div class="ps-domain-row">
+          <span class="ps-domain-text" id="ps-current-domain">Detecting active domain...</span>
+        </div>
+
+        <div class="ps-input-row">
+          <input 
+            type="text" 
+            id="ps-url-input" 
+            class="ps-input" 
+            placeholder="https://domain.com/login" 
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            inputmode="url"
+          />
+        </div>
+
+        <button class="ps-btn-primary" id="ps-btn-scan-current">
+          <svg id="ps-scan-btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span id="ps-scan-btn-text">Scan Current Page</span>
+        </button>
+      </section>
+
+      <!-- Diagnostic Results Panel -->
+      <section class="ps-result-panel" id="ps-result-panel">
+        
+        <!-- Loading Progress Bar (Visible during scan) -->
+        <div id="ps-loading-bar" class="ps-scan-loading-bar" style="display: none;"></div>
+
+        <!-- Verdict & Badge -->
+        <div class="ps-verdict-row">
+          <div class="ps-verdict-headline" id="ps-verdict-headline">Engine Ready</div>
+          <span class="ps-badge ps-badge-safe" id="ps-verdict-badge">SAFE</span>
+        </div>
+
+        <!-- Clean Metrics Grid: Domain Status, ML Confidence, Heuristic Flags -->
+        <div class="ps-metrics-grid">
+          
+          <!-- Metric 1: Composite Risk -->
+          <div class="ps-metric-box">
+            <div class="ps-metric-label">Composite Risk</div>
+            <div class="ps-metric-value" id="ps-val-composite">0%</div>
+            <div class="ps-bar-wrapper">
+              <div class="ps-bar-fill" id="ps-bar-composite" style="width: 0%; background-color: #2563eb;"></div>
+            </div>
+          </div>
+
+          <!-- Metric 2: ML Probability -->
+          <div class="ps-metric-box">
+            <div class="ps-metric-label">ML Confidence</div>
+            <div class="ps-metric-value" id="ps-val-ml">0%</div>
+            <div class="ps-bar-wrapper">
+              <div class="ps-bar-fill" id="ps-bar-ml" style="width: 0%; background-color: #3b82f6;"></div>
+            </div>
+          </div>
+
+          <!-- Metric 3: Heuristics Flag Count -->
+          <div class="ps-metric-box">
+            <div class="ps-metric-label">Heuristic Risk</div>
+            <div class="ps-metric-value" id="ps-val-heuristics">0%</div>
+            <div class="ps-bar-wrapper">
+              <div class="ps-bar-fill" id="ps-bar-heuristics" style="width: 0%; background-color: #64748b;"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Plain-English Explanation -->
+        <p class="ps-summary-text" id="ps-summary-text">
+          Click "Scan Current Page" to run sub-millisecond heuristics, XGBoost classification, and contextual intelligence.
+        </p>
+
+        <!-- Detected Security Signals List -->
+        <div class="ps-flags-list" id="ps-flags-list">
+          <div class="ps-flag-item">
+            <span style="color: #34d399;">✓</span> Zero active threat signatures detected.
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Minimalist Enterprise Footer -->
+    <footer class="ps-app-footer">
+      <a href="http://localhost:3000" target="_blank" class="ps-footer-link" id="ps-open-dashboard-link">
+        <span>Open SOC Analytics Dashboard</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </a>
+      <span class="ps-latency-text" id="ps-scan-latency">-- ms</span>
+    </footer>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

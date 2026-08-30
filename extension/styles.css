@@ -1,0 +1,531 @@
+/* ==========================================================================
+   PhishShield AI — Enterprise Design System (Cloudflare / Snyk / CrowdStrike)
+   ========================================================================== */
+
+:root {
+  --ps-surface: #0f172a;       /* Base Dark Slate */
+  --ps-panel: #1e293b;         /* Card & Panel Muted Slate */
+  --ps-panel-hover: #334155;
+  --ps-border: #334155;        /* Crisp 1px Border */
+  --ps-border-subtle: #1e293b;
+  
+  --ps-primary: #2563eb;       /* Primary Action Blue */
+  --ps-primary-hover: #1d4ed8;
+  
+  --ps-text-white: #f8fafc;    /* High-contrast Neutral Text */
+  --ps-text-muted: #94a3b8;    /* Secondary / Subtitle Text */
+  --ps-text-dim: #64748b;      /* Tertiary / Caption Text */
+
+  /* Flat, Crisp Status Badges */
+  --ps-badge-safe-bg: #065f46;
+  --ps-badge-safe-text: #34d399;
+  
+  --ps-badge-med-bg: #78350f;
+  --ps-badge-med-text: #fbbf24;
+  
+  --ps-badge-danger-bg: #881337;
+  --ps-badge-danger-text: #fca5a5;
+
+  --ps-danger-banner-bg: #7f1d1d;
+  --ps-danger-banner-border: #991b1b;
+
+  --ps-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --ps-mono: "JetBrains Mono", "SFMono-Regular", Consolas, Menlo, monospace;
+}
+
+/* Base Extension Popup Reset */
+body.ps-popup-body {
+  width: 360px;
+  height: 480px;
+  max-width: 360px;
+  max-height: 480px;
+  margin: 0;
+  padding: 0;
+  font-family: var(--ps-font);
+  background-color: var(--ps-surface);
+  color: var(--ps-text-white);
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Layout Container */
+.ps-app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+  background-color: var(--ps-surface);
+}
+
+/* Minimalist Header */
+.ps-app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--ps-surface);
+  border-bottom: 1px solid var(--ps-border);
+}
+
+.ps-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ps-shield-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--ps-primary);
+}
+
+.ps-logo-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ps-text-white);
+}
+
+.ps-engine-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ps-text-muted);
+}
+
+.ps-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #64748b;
+}
+
+.ps-status-dot.online {
+  background-color: #10b981;
+}
+
+.ps-status-dot.offline {
+  background-color: #ef4444;
+}
+
+/* Main Content Area */
+.ps-main-content {
+  flex: 1;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Active Tab Status Card */
+.ps-card {
+  background-color: var(--ps-panel);
+  border: 1px solid var(--ps-border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.ps-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ps-card-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ps-text-muted);
+}
+
+.ps-domain-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ps-ssl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--ps-mono);
+  background-color: #0f172a;
+  border: 1px solid var(--ps-border);
+  color: #34d399;
+}
+
+.ps-ssl-badge.insecure {
+  color: #f87171;
+  border-color: #7f1d1d;
+}
+
+.ps-domain-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ps-text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+/* URL Input field */
+.ps-input-row {
+  margin-bottom: 10px;
+}
+
+.ps-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-family: var(--ps-mono);
+  color: var(--ps-text-white);
+  background-color: var(--ps-surface);
+  border: 1px solid var(--ps-border);
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.ps-input:focus {
+  border-color: var(--ps-primary);
+}
+
+/* Action Buttons */
+.ps-btn-primary {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--ps-primary);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.ps-btn-primary:hover {
+  background-color: var(--ps-primary-hover);
+}
+
+.ps-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Result Overview Card */
+.ps-result-panel {
+  background-color: var(--ps-panel);
+  border: 1px solid var(--ps-border);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.ps-verdict-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ps-verdict-headline {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ps-text-white);
+}
+
+/* Status Badges */
+.ps-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--ps-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ps-badge-safe {
+  background-color: var(--ps-badge-safe-bg);
+  color: var(--ps-badge-safe-text);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.ps-badge-low, .ps-badge-medium {
+  background-color: var(--ps-badge-med-bg);
+  color: var(--ps-badge-med-text);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.ps-badge-high, .ps-badge-critical {
+  background-color: var(--ps-badge-danger-bg);
+  color: var(--ps-badge-danger-text);
+  border: 1px solid rgba(252, 165, 165, 0.3);
+}
+
+/* Clean Metrics Grid */
+.ps-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.ps-metric-box {
+  background-color: var(--ps-surface);
+  border: 1px solid var(--ps-border);
+  border-radius: 6px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.ps-metric-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ps-text-dim);
+  margin-bottom: 2px;
+}
+
+.ps-metric-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--ps-mono);
+  color: var(--ps-text-white);
+}
+
+/* Muted Progress Bars */
+.ps-bar-wrapper {
+  margin-top: 4px;
+  width: 100%;
+  height: 4px;
+  background-color: #334155;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ps-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background-color: var(--ps-primary);
+  transition: width 0.4s ease;
+}
+
+/* Explanation Text */
+.ps-summary-text {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--ps-text-muted);
+}
+
+/* Detected Signals List */
+.ps-flags-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 75px;
+  overflow-y: auto;
+}
+
+.ps-flag-item {
+  font-size: 10px;
+  color: #cbd5e1;
+  background-color: var(--ps-surface);
+  border: 1px solid var(--ps-border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Popup Scan Loading Bar */
+.ps-scan-loading-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #2563eb, #38bdf8, #2563eb);
+  background-size: 200% 100%;
+  animation: psLoadingAnim 1.2s infinite linear;
+  border-radius: 8px 8px 0 0;
+}
+
+@keyframes psLoadingAnim {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Minimalist Footer */
+.ps-app-footer {
+  padding: 10px 16px;
+  background-color: var(--ps-surface);
+  border-top: 1px solid var(--ps-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.ps-footer-link {
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+
+.ps-footer-link:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+.ps-latency-text {
+  font-size: 10px;
+  font-family: var(--ps-mono);
+  color: var(--ps-text-dim);
+}
+
+/* ==========================================================================
+   In-Page Security Interception Banner (Content Script)
+   ========================================================================== */
+
+#phishshield-intercept-banner {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 2147483647 !important;
+  background-color: #7f1d1d !important;
+  border-bottom: 1px solid #991b1b !important;
+  color: #f8fafc !important;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  padding: 12px 24px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  box-sizing: border-box !important;
+  animation: psSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.ps-banner-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex: 1 !important;
+}
+
+.ps-banner-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  border-radius: 6px !important;
+  font-size: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.ps-banner-text-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.ps-banner-headline {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #fef2f2 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.ps-banner-explanation {
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+  color: #fecaca !important;
+}
+
+.ps-banner-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+.ps-banner-btn-safety {
+  padding: 7px 14px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  background-color: #2563eb !important;
+  border: 1px solid #3b82f6 !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.ps-banner-btn-safety:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.ps-banner-btn-proceed {
+  padding: 7px 12px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: #e2e8f0 !important;
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid #475569 !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.ps-banner-btn-proceed:hover {
+  background-color: #334155 !important;
+}
+
+@keyframes psSlideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
