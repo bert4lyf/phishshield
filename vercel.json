@@ -1,8 +1,8 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "backend/app/main.py"
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
   ]
 }
