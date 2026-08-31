@@ -124,11 +124,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (!response || !response.success) {
           verdictHeadline.textContent = "Audit Error";
-          verdictBadge.textContent = "ERROR";
+          verdictBadge.textContent = "OFFLINE";
           verdictBadge.className = "ps-badge ps-badge-critical";
-          summaryText.textContent = "Error: " + (response ? response.error : "Failed to connect to backend engine at http://localhost:8000");
+          summaryText.textContent = "Error: " + (response ? response.error : "Could not connect to backend. Click the ⚙️ icon above to configure your live Vercel backend URL.");
           return;
         }
+
 
         renderAuditResults(response.data);
       }
@@ -215,9 +216,61 @@ document.addEventListener("DOMContentLoaded", async () => {
       .replace(/'/g, "&#039;");
   }
 
-  // 5. Open SOC Analytics Dashboard Tab
-  dashboardLink.addEventListener("click", (e) => {
+  // 5. Settings Panel & Custom Backend URL
+  const settingsPanel = document.getElementById("ps-settings-panel");
+  const toggleSettingsBtn = document.getElementById("ps-btn-toggle-settings");
+  const engineStatusBtn = document.getElementById("ps-engine-status");
+  const apiUrlInput = document.getElementById("ps-api-url-input");
+  const saveApiBtn = document.getElementById("ps-btn-save-api");
+  const settingsStatus = document.getElementById("ps-settings-status");
+
+  // Load configured apiUrl
+  chrome.storage.local.get("apiUrl", (res) => {
+    if (res && res.apiUrl) {
+      apiUrlInput.value = res.apiUrl;
+    } else {
+      apiUrlInput.value = "http://localhost:8000";
+    }
+  });
+
+  function toggleSettings() {
+    if (settingsPanel.style.display === "none" || !settingsPanel.style.display) {
+      settingsPanel.style.display = "block";
+      apiUrlInput.focus();
+    } else {
+      settingsPanel.style.display = "none";
+    }
+  }
+
+  if (toggleSettingsBtn) toggleSettingsBtn.addEventListener("click", toggleSettings);
+  if (engineStatusBtn) engineStatusBtn.addEventListener("click", toggleSettings);
+
+  if (saveApiBtn) {
+    saveApiBtn.addEventListener("click", async () => {
+      let val = apiUrlInput.value.trim();
+      if (!val) val = "http://localhost:8000";
+      // Remove trailing slash
+      val = val.replace(/\/+$/, "");
+      if (!val.startsWith("http://") && !val.startsWith("https://")) {
+        val = "https://" + val;
+      }
+      apiUrlInput.value = val;
+      await chrome.storage.local.set({ apiUrl: val });
+      settingsStatus.textContent = "Saved! Reconnecting to engine...";
+      settingsStatus.style.color = "#34d399";
+      await checkEngineStatus();
+      setTimeout(() => {
+        settingsStatus.textContent = "";
+        settingsPanel.style.display = "none";
+      }, 1200);
+    });
+  }
+
+  // 6. Open SOC Analytics Dashboard Tab
+  dashboardLink.addEventListener("click", async (e) => {
     e.preventDefault();
-    chrome.tabs.create({ url: "http://localhost:3000" });
+    const { apiUrl = "http://localhost:8000" } = await chrome.storage.local.get("apiUrl");
+    chrome.tabs.create({ url: apiUrl });
   });
 });
+
