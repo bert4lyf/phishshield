@@ -11,42 +11,55 @@ from app.config import settings
 
 logger = logging.getLogger("phishshield.database")
 
-# Serverless Storage Resolution (Vercel /tmp directory check)
-is_vercel = bool(os.getenv("VERCEL"))
+# Serverless Storage Resolution
+is_serverless = bool(
+    os.getenv("VERCEL")
+    or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
+    or os.getenv("LAMBDA_TASK_ROOT")
+)
 
-if is_vercel:
-    db_url = os.getenv("DATABASE_URL", "sqlite:////tmp/phishshield.db")
+if is_serverless:
     db_path = Path("/tmp/phishshield.db")
+    db_url = os.getenv("DATABASE_URL", "sqlite:////tmp/phishshield.db")
 else:
-    db_url = settings.DATABASE_URL
     db_path = settings.SQLITE_DB_PATH
+    db_url = settings.DATABASE_URL
 
 # Ensure parent directory for database exists and is writable
 try:
-    db_dir = db_path.parent
-    db_dir.mkdir(parents=True, exist_ok=True)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
 except Exception as e:
     logger.warning(f"Could not create database directory {db_path.parent}: {e}")
+    db_path = Path("/tmp/phishshield.db")
+    db_url = "sqlite:////tmp/phishshield.db"
+    try:
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
 
 # SQLAlchemy engine configured for SQLite with multi-threading support
-engine = create_engine(
-    db_url,
-    connect_args={"check_same_thread": False} if "sqlite" in db_url else {},
-    echo=False
-)
+try:
+    engine = create_engine(
+        db_url,
+        connect_args={"check_same_thread": False} if "sqlite" in db_url else {},
+        echo=False
+    )
+except Exception as e:
+    logger.error(f"Failed to create database engine with {db_url}: {e}. Falling back to in-memory SQLite.")
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
 def init_db() -> None:
-    """Initialize database tables on application startup."""
+    """Initialize database tables on application startup or on-demand."""
     try:
         import app.models  # Ensure models are registered with Base metadata
         Base.metadata.create_all(bind=engine)
-        logger.info(f"Database schema initialized successfully at {db_path} (Vercel: {is_vercel})")
+        logger.info(f"Database schema initialized successfully at {db_path} (Serverless: {is_serverless})")
     except Exception as e:
-        logger.error(f"Error initializing database schema: {e}", exc_info=True)
+        logger.warning(f"Database schema initialization warning: {e}")
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -56,3 +69,4 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
+

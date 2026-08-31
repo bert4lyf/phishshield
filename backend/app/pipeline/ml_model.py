@@ -5,8 +5,14 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-import numpy as np
-import xgboost as xgb
+try:
+    import numpy as np
+    import xgboost as xgb
+    XGB_AVAILABLE = True
+except Exception as _xgb_err:
+    np = None
+    xgb = None
+    XGB_AVAILABLE = False
 
 from app.config import settings
 from app.pipeline.feature_extractor import FEATURE_NAMES, extract_url_features, features_to_vector
@@ -26,12 +32,17 @@ class PhishingMLModel:
 
     def __init__(self, model_path: Optional[Path] = None):
         self.model_path = model_path or settings.ML_MODEL_PATH
-        self.model: Optional[xgb.XGBClassifier] = None
+        self.model: Optional[Any] = None
         self.is_loaded: bool = False
         self._load_model()
 
     def _load_model(self) -> None:
         """Load XGBoost classifier from JSON binary file."""
+        if not XGB_AVAILABLE or xgb is None:
+            logger.info("XGBoost/NumPy not available in environment. Tier 2 ML will use deterministic heuristic estimator.")
+            self.is_loaded = False
+            return
+
         if not self.model_path.exists():
             logger.warning(f"ML Model file not found at {self.model_path}. ML inference will use fallback heuristic estimator.")
             self.is_loaded = False
@@ -44,8 +55,9 @@ class PhishingMLModel:
             self.is_loaded = True
             logger.info("Tier 2 XGBoost ML Model loaded successfully.")
         except Exception as e:
-            logger.error(f"Failed to load XGBoost model from {self.model_path}: {e}", exc_info=True)
+            logger.warning(f"Failed to load XGBoost model from {self.model_path}: {e}. Using fallback estimator.")
             self.is_loaded = False
+
 
     def predict_risk_score(self, url: str) -> float:
         """
@@ -60,7 +72,7 @@ class PhishingMLModel:
         features_dict = extract_url_features(url)
         vector = features_to_vector(features_dict)
 
-        if not self.is_loaded or self.model is None:
+        if not self.is_loaded or self.model is None or np is None:
             # Fallback estimation if model failed to load
             return self._fallback_estimate(features_dict)
 
@@ -70,6 +82,7 @@ class PhishingMLModel:
             # Probability of Class 1 (Phishing)
             phishing_prob = float(probabilities[0][1])
             return round(phishing_prob * 100.0, 2)
+
         except Exception as e:
             logger.warning(f"XGBoost inference error for URL '{url}': {e}. Using fallback estimator.")
             return self._fallback_estimate(features_dict)

@@ -44,8 +44,14 @@ class Settings:
     WEIGHT_ML: float = 0.45
     WEIGHT_AI: float = 0.20
 
-    # Data & Storage Paths (Serverless /tmp check for Vercel read-only filesystem)
-    if os.getenv("VERCEL"):
+    # Data & Storage Paths (Serverless /tmp check for Vercel / Lambda read-only filesystem)
+    IS_SERVERLESS: bool = bool(
+        os.getenv("VERCEL")
+        or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
+        or os.getenv("LAMBDA_TASK_ROOT")
+    )
+
+    if IS_SERVERLESS:
         DATA_DIR: Path = Path("/tmp")
         SQLITE_DB_PATH: Path = Path("/tmp/phishshield.db")
         DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:////tmp/phishshield.db")
@@ -55,12 +61,19 @@ class Settings:
         DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'data' / 'phishshield.db'}")
 
     # ML Model Path resolution with fallbacks for serverless environments
-    _default_model_path = BASE_DIR / "data" / "model.json"
-    if not _default_model_path.exists():
-        if Path("backend/data/model.json").exists():
-            _default_model_path = Path("backend/data/model.json")
-        elif Path("data/model.json").exists():
-            _default_model_path = Path("data/model.json")
+    _possible_model_paths = [
+        BASE_DIR / "data" / "model.json",
+        Path(__file__).resolve().parent.parent / "data" / "model.json",
+        Path.cwd() / "backend" / "data" / "model.json",
+        Path.cwd() / "data" / "model.json",
+        Path("/var/task/backend/data/model.json"),
+        Path("/var/task/data/model.json"),
+    ]
+    _default_model_path = _possible_model_paths[0]
+    for _p in _possible_model_paths:
+        if _p.exists():
+            _default_model_path = _p
+            break
 
     ML_MODEL_PATH: Path = _default_model_path
 
@@ -69,3 +82,4 @@ class Settings:
 
 
 settings = Settings()
+

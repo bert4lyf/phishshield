@@ -15,9 +15,9 @@ __pycache__/
 .git/
 .github/
 
-# Frontend Extension & Dashboard (Hosted separately / static)
+# Frontend Extension (Installed in Chrome as unpacked extension)
 extension/
-dashboard/
+
 
 # Local SQLite Databases & Logs
 *.db
