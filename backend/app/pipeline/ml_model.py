@@ -1,18 +1,11 @@
-"""Tier 2 Machine Learning Model inference engine using trained XGBoost classifier."""
+"""Tier 2 Machine Learning Model inference engine for PhishShield AI."""
 
+import json
 import logging
+import math
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
-
-try:
-    import numpy as np
-    import xgboost as xgb
-    XGB_AVAILABLE = True
-except Exception as _xgb_err:
-    np = None
-    xgb = None
-    XGB_AVAILABLE = False
+from typing import Any, Dict, List, Optional
 
 from app.config import settings
 from app.pipeline.feature_extractor import FEATURE_NAMES, extract_url_features, features_to_vector
@@ -26,38 +19,52 @@ class PhishingMLModel:
     """
     Tier 2 ML Classifier for PhishShield AI.
     
-    Loads the trained XGBoost model from model.json and predicts
-    phishing risk probability (0.0% to 100.0%) based on lexical URL features.
+    Loads the trained model from model.json and evaluates the gradient boosting
+    decision trees with zero heavy runtime C/C++ dependencies.
     """
 
     def __init__(self, model_path: Optional[Path] = None):
         self.model_path = model_path or settings.ML_MODEL_PATH
-        self.model: Optional[Any] = None
+        self.trees: List[Dict[str, Any]] = []
+        self.feature_importances: Dict[str, float] = {name: 0.0 for name in FEATURE_NAMES}
         self.is_loaded: bool = False
         self._load_model()
 
     def _load_model(self) -> None:
-        """Load XGBoost classifier from JSON binary file."""
-        if not XGB_AVAILABLE or xgb is None:
-            logger.info("XGBoost/NumPy not available in environment. Tier 2 ML will use deterministic heuristic estimator.")
-            self.is_loaded = False
-            return
-
+        """Load decision tree parameters directly from model.json."""
         if not self.model_path.exists():
-            logger.warning(f"ML Model file not found at {self.model_path}. ML inference will use fallback heuristic estimator.")
+            logger.warning(f"ML Model file not found at {self.model_path}. Using heuristic estimator.")
             self.is_loaded = False
             return
 
         try:
-            logger.info(f"Loading Tier 2 XGBoost model from {self.model_path}...")
-            self.model = xgb.XGBClassifier()
-            self.model.load_model(str(self.model_path))
-            self.is_loaded = True
-            logger.info("Tier 2 XGBoost ML Model loaded successfully.")
-        except Exception as e:
-            logger.warning(f"Failed to load XGBoost model from {self.model_path}: {e}. Using fallback estimator.")
-            self.is_loaded = False
+            logger.info(f"Loading Tier 2 XGBoost model parameters from {self.model_path}...")
+            with open(self.model_path, "r", encoding="utf-8") as f:
+                model_data = json.load(f)
 
+            self.trees = model_data.get("learner", {}).get("gradient_booster", {}).get("model", {}).get("trees", [])
+            
+            # Compute feature split gain for importance reporting
+            feat_counts: Dict[int, float] = {}
+            for tree in self.trees:
+                lefts = tree.get("left_children", [])
+                splits = tree.get("split_indices", [])
+                losses = tree.get("loss_changes", [])
+                for i, left in enumerate(lefts):
+                    if left != -1 and i < len(splits):
+                        f_idx = splits[i]
+                        gain = losses[i] if i < len(losses) else 1.0
+                        feat_counts[f_idx] = feat_counts.get(f_idx, 0.0) + max(0.0, float(gain))
+            
+            total_gain = sum(feat_counts.values()) or 1.0
+            for idx, name in enumerate(FEATURE_NAMES):
+                self.feature_importances[name] = round(feat_counts.get(idx, 0.0) / total_gain, 4)
+
+            self.is_loaded = len(self.trees) > 0
+            logger.info(f"Tier 2 ML Model loaded successfully with {len(self.trees)} trees.")
+        except Exception as e:
+            logger.warning(f"Failed to load model from {self.model_path}: {e}. Using fallback estimator.")
+            self.is_loaded = False
 
     def predict_risk_score(self, url: str) -> float:
         """
@@ -72,19 +79,31 @@ class PhishingMLModel:
         features_dict = extract_url_features(url)
         vector = features_to_vector(features_dict)
 
-        if not self.is_loaded or self.model is None or np is None:
-            # Fallback estimation if model failed to load
+        if not self.is_loaded or not self.trees:
             return self._fallback_estimate(features_dict)
 
         try:
-            X = np.array([vector], dtype=np.float32)
-            probabilities = self.model.predict_proba(X)
-            # Probability of Class 1 (Phishing)
-            phishing_prob = float(probabilities[0][1])
-            return round(phishing_prob * 100.0, 2)
+            raw_margin = 0.0
+            for tree in self.trees:
+                lefts = tree["left_children"]
+                rights = tree["right_children"]
+                splits = tree["split_indices"]
+                conds = tree["split_conditions"]
+                weights = tree["base_weights"]
+                node = 0
+                while lefts[node] != -1:
+                    f_idx = splits[node]
+                    thresh = conds[node]
+                    if vector[f_idx] < thresh:
+                        node = lefts[node]
+                    else:
+                        node = rights[node]
+                raw_margin += weights[node]
 
+            prob = 1.0 / (1.0 + math.exp(-raw_margin))
+            return round(prob * 100.0, 2)
         except Exception as e:
-            logger.warning(f"XGBoost inference error for URL '{url}': {e}. Using fallback estimator.")
+            logger.warning(f"ML inference error for URL '{url}': {e}. Using fallback estimator.")
             return self._fallback_estimate(features_dict)
 
     def predict_detailed(self, url: str) -> Dict[str, Any]:
@@ -98,7 +117,7 @@ class PhishingMLModel:
             "ml_risk_score": risk_score,
             "is_phishing_predicted": risk_score >= 50.0,
             "features": features_dict,
-            "model_version": "XGBoost-v1.0"
+            "model_version": "XGBoost-v1.0-Lite"
         }
 
     def _fallback_estimate(self, features: Dict[str, Any]) -> float:
@@ -118,13 +137,7 @@ class PhishingMLModel:
 
     def get_feature_importances(self) -> Dict[str, float]:
         """Retrieve dictionary of feature names to importance scores."""
-        if not self.is_loaded or self.model is None:
-            return {name: 0.0 for name in FEATURE_NAMES}
-        try:
-            importances = self.model.feature_importances_
-            return {name: float(importances[i]) for i, name in enumerate(FEATURE_NAMES)}
-        except Exception:
-            return {name: 0.0 for name in FEATURE_NAMES}
+        return self.feature_importances
 
 
 def get_ml_model() -> PhishingMLModel:
